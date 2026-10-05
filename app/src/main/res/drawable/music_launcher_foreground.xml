@@ -1,0 +1,3 @@
+<bitmap xmlns:android="http://schemas.android.com/apk/res/android"
+    android:src="@drawable/music_launcher_v3"
+    android:gravity="fill" />
