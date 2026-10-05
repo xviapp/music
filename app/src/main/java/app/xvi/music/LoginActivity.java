@@ -57,9 +57,6 @@ public final class LoginActivity extends ComponentActivity {
         LinearLayout root = new LinearLayout(this);
         root.setOrientation(LinearLayout.VERTICAL);
         root.setBackgroundColor(paper);
-        androidx.core.view.WindowInsetsControllerCompat barsController = androidx.core.view.WindowCompat.getInsetsController(getWindow(), root);
-        barsController.setAppearanceLightStatusBars(!dark);
-        barsController.setAppearanceLightNavigationBars(!dark);
         ViewCompat.setOnApplyWindowInsetsListener(root, (view, insets) -> {
             androidx.core.graphics.Insets bars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             view.setPadding(bars.left, bars.top, bars.right, bars.bottom);
@@ -113,6 +110,10 @@ public final class LoginActivity extends ComponentActivity {
         });
         root.addView(web, new LinearLayout.LayoutParams(-1, 0, 1));
         setContentView(root);
+        // The window's decor view must exist before accessing its insets controller.
+        androidx.core.view.WindowInsetsControllerCompat barsController = androidx.core.view.WindowCompat.getInsetsController(getWindow(), root);
+        barsController.setAppearanceLightStatusBars(!dark);
+        barsController.setAppearanceLightNavigationBars(!dark);
         web.loadUrl("https://music.163.com/#/login");
         main.post(cookiePoll);
     }

@@ -2,6 +2,25 @@
 
 独立 Android 音乐应用，首页以推荐为主。界面参照 chase、moment：浅色使用纸白背景与暖赭棕主色，深色使用暖灰黑背景与柔和琥珀色主色。播放状态由 AndroidX Media3 的独立 `MediaSessionService` 持有。
 
+## 最新更新
+
+### 2026-10-05
+
+#### 新增
+
+- 歌曲详情支持查看歌曲信息、加入播放队列及喜欢／取消喜欢。
+
+#### 优化
+
+- 点击歌曲封面、标题和最近播放条目先查看详情，点击播放按钮才开始播放；私人 FM 可先浏览歌曲。
+- 播放页展开、收起和歌词滚动更流畅，并适配减少动态效果设置。
+
+#### 修复
+
+- 修复点击“打开官方登录”时应用闪退的问题。
+
+完整历史见[更新记录](docs/releases/release-notes.md)。
+
 ## 构建与安装
 
 需要 JDK 21 和 Android SDK 36，仓库已包含 Gradle wrapper。配置 `JAVA_HOME` 和 `ANDROID_HOME`，或在不纳入 Git 的 `local.properties` 中设置 `sdk.dir`：
