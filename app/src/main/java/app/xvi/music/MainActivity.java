@@ -91,6 +91,12 @@ public final class MainActivity extends ComponentActivity {
         if(player==null)throw new IllegalStateException("播放器正在准备，请稍后重试");
         switch(args.getString("action")){
             case "queue":var tracks=Tracks.items(args.getJSONArray("songs"));if(tracks.isEmpty())throw new IllegalArgumentException("没有可播放的歌曲");int start=args.optInt("index",0);if(start<0||start>=tracks.size())throw new IllegalArgumentException("播放位置无效");settings.prefs.edit().putBoolean("fm",args.optBoolean("fm")).apply();player.setMediaItems(tracks,start,0);player.prepare();player.play();break;
+            case "append":
+                var added=Tracks.items(args.getJSONArray("songs"));
+                if(added.isEmpty())throw new IllegalArgumentException("没有可添加的歌曲");
+                if(player.getMediaItemCount()==0){settings.prefs.edit().putBoolean("fm",false).apply();player.pause();}
+                else if(player.getPlaybackState()==Player.STATE_ENDED)player.pause();
+                player.addMediaItems(added);break;
             case "play":if(player.getMediaItemCount()==0)return;if(player.getPlaybackState()==Player.STATE_ENDED)player.seekToDefaultPosition();player.prepare();player.play();break;
             case "pause":player.pause();break;
             case "next":player.seekToNextMediaItem();break;
