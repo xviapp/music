@@ -1,0 +1,53 @@
+# 音乐 Android 应用
+
+独立 Android 音乐应用，首页以推荐为主。界面参照 chase、moment：浅色使用纸白背景与暖赭棕主色，深色使用暖灰黑背景与柔和琥珀色主色。播放状态由 AndroidX Media3 的独立 `MediaSessionService` 持有。
+
+## 构建与安装
+
+需要 JDK 21 和 Android SDK 36，仓库已包含 Gradle wrapper。配置 `JAVA_HOME` 和 `ANDROID_HOME`，或在不纳入 Git 的 `local.properties` 中设置 `sdk.dir`：
+
+```sh
+./gradlew :app:assembleDebug
+```
+
+APK 位于 `app/build/outputs/apk/debug/app-debug.apk`。真实接口的 Android 测试是只读的，扫码登录测试只申请二维码密钥，不会自动登录：
+
+```sh
+npm test
+./gradlew :app:testDebugUnitTest :app:lintDebug
+./gradlew :app:assembleDebugAndroidTest
+```
+
+连接设备后，明确选择运行联网测试：
+
+```sh
+adb shell am instrument -w \
+  -e class app.xvi.music.DirectApiTest \
+  app.xvi.music.test/androidx.test.runner.AndroidJUnitRunner
+```
+
+## 已实现
+
+- 推荐首页、精选歌单、每日推荐、新歌速递、私人 FM、搜索、歌单详情、音乐库、云盘和最近播放。
+- 优先打开网易云官方网页登录，扫码登录作为备用；账号 Cookie 在 Android Keystore 保护的 AES-GCM 密文中保存，界面脚本无法直接读取。
+- 客户端内置 `api-enhanced` 所需的 weapi/eapi 请求协议和固定路由白名单，不要求另行部署 Node API 服务，也不接受界面提供任意服务地址。
+- Media3 ExoPlayer、播放队列、播放/暂停、上一首/下一首、进度、歌词、循环、随机、喜欢、音质和定时关闭。
+- 歌单详情支持收藏／取消收藏，成功后更新音乐库；自己创建的歌单不显示收藏按钮，请求失败保留原状态。
+- `MediaSessionService`、系统 MediaStyle 通知、锁屏/耳机媒体按键和切后台继续播放。后台播放设置关闭后，移除任务会暂停并停止服务。
+- 服务端返回的试听、无权限、失效地址和网络错误会在播放器中给出可操作的中文错误，不把“拿到 URL”视为一定可播放。
+
+## 目录
+
+- `app/src/main/java/app/xvi/music/MainActivity.java`：WebView UI 容器、Native bridge 和页面播放器控制。
+- `app/src/main/java/app/xvi/music/PlaybackService.java`：后台播放、媒体会话、通知、队列恢复、FM 补充和定时关闭。
+- `app/src/main/java/app/xvi/music/MusicApi.java`、`ApiCrypto.java`、`ApiRoutes.java`：api-enhanced 的客户端协议移植和接口白名单。
+- `app/src/main/assets/ui/`：按原型整理的页面、样式和只处理展示的 JS；不直接访问网络。
+- `app/src/test/`、`tests/`：加密向量、路由安全、歌词解析、展示数据归一化测试。
+
+## 后台播放边界
+
+音频播放不依赖 WebView 存活。页面退出后，Service、Player 和 MediaSession 仍持有队列；系统通知及锁屏控制通过 MediaSession 进入同一 Player。音频地址只在播放器需要时解析并短时缓存，播放地址过期会重新请求。真实设备上仍需按目标厂商测试省电策略、网络切换、蓝牙/耳机、音频焦点中断、服务被系统回收后的恢复和会员歌曲权限。
+
+## 来源与许可
+
+接口协议与路由组织参考 NeteaseCloudMusicApiEnhanced，功能结构参考 YesPlayMusic。参考项目不属于本仓库，构建不依赖这些项目。对应 MIT 文本见 [THIRD_PARTY_NOTICES](THIRD_PARTY_NOTICES)。应用不复制 YesPlayMusic 的前端代码。
