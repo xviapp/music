@@ -30,6 +30,19 @@ public final class ApiRoutes {
             case "/login/status": path="/api/w/nuser/account/get"; break;
             case "/album": path="/api/v1/album/"+id(p,"id"); break;
             case "/artists": path="/api/v1/artist/"+id(p,"id"); break;
+            case "/artist/songs": path="/api/v1/artist/songs";web=false;data.put("id",id(p,"id")).put("private_cloud","true").put("work_type",1).put("order","hot").put("limit",limit).put("offset",offset);break;
+            case "/artist/album": path="/api/artist/albums/"+id(p,"id");data.put("limit",limit).put("offset",offset).put("total",true);break;
+            case "/artist/desc": path="/api/artist/introduction";data.put("id",id(p,"id"));break;
+            case "/artist/sub":case "/album/sub":
+                int subOperation=p.getInt("t");if(subOperation!=1&&subOperation!=2)throw new IllegalArgumentException("收藏操作无效");
+                long subId=id(p,"id");boolean artistSub=route.equals("/artist/sub");
+                path="/api/"+(artistSub?"artist":"album")+"/"+(subOperation==1?"sub":"unsub");
+                if(artistSub)data.put("artistId",subId).put("artistIds","["+subId+"]");else data.put("id",subId);break;
+            case "/artist/sublist":case "/album/sublist":path="/api"+route;data.put("limit",limit).put("offset",offset).put("total",true);break;
+            case "/album/detail/dynamic":path="/api/album/detail/dynamic";data.put("id",id(p,"id"));break;
+            case "/toplist":path="/api/toplist";web=false;break;
+            case "/comment/music":long commentId=id(p,"id");path="/api/v1/resource/comments/R_SO_4_"+commentId;data.put("rid",commentId).put("limit",limit).put("offset",offset).put("beforeTime",Math.max(0,p.optLong("before",0)));break;
+            case "/search/suggest":String keywords=p.getString("keywords").trim();if(keywords.isEmpty()||keywords.length()>200)throw new IllegalArgumentException("搜索关键词无效");path="/api/search/suggest/keyword";data.put("s",keywords);break;
             case "/top/song": path="/api/v1/discovery/new/songs"; data.put("areaId",0).put("total",true); break;
             default: throw new IllegalArgumentException("不支持的音乐接口");
         }

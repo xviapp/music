@@ -1,6 +1,7 @@
 package app.xvi.music;
 
 import android.net.Uri;
+import android.os.Bundle;
 import androidx.media3.common.*;
 import org.json.*;
 import java.util.*;
@@ -11,6 +12,10 @@ final class Tracks {
         if(!id.matches("[0-9]+") || Long.parseLong(id)<=0)throw new IllegalArgumentException("歌曲编号无效");
         MediaMetadata.Builder metadata=new MediaMetadata.Builder().setTitle(song.optString("name","未知歌曲"))
                 .setArtist(song.optString("artist","")).setAlbumTitle(song.optString("album",""));
+        Bundle extras=new Bundle();
+        extras.putString("artists",song.optJSONArray("artists")==null?"[]":song.getJSONArray("artists").toString());
+        extras.putString("albumId",song.optString("albumId",""));extras.putLong("duration",song.optLong("duration",0));
+        metadata.setExtras(extras);
         String artwork=song.optString("cover","");
         if(artwork.startsWith("https://"))metadata.setArtworkUri(Uri.parse(artwork));
         return new MediaItem.Builder().setMediaId(id).setUri("https://music.invalid/"+id)
@@ -20,7 +25,10 @@ final class Tracks {
         MediaMetadata m=item.mediaMetadata;
         return new JSONObject().put("id",item.mediaId).put("name",m.title==null?"":m.title.toString())
                 .put("artist",m.artist==null?"":m.artist.toString()).put("album",m.albumTitle==null?"":m.albumTitle.toString())
-                .put("cover",m.artworkUri==null?"":m.artworkUri.toString());
+                .put("cover",m.artworkUri==null?"":m.artworkUri.toString())
+                .put("artists",new JSONArray(m.extras==null?"[]":m.extras.getString("artists","[]")))
+                .put("albumId",m.extras==null?"":m.extras.getString("albumId",""))
+                .put("duration",m.extras==null?0:m.extras.getLong("duration",0));
     }
     static List<MediaItem> items(JSONArray array)throws Exception{
         if(array.length()>1000)throw new IllegalArgumentException("队列最多容纳 1000 首歌曲");

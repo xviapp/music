@@ -2,9 +2,14 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {track,tracks,escape,imageUrl,lyrics,lyricIndex,time,playbackKey} from '../app/src/main/assets/ui/model.js';
 test('normalizes modern tracks and cloud records',()=>{
-  assert.deepEqual(track({id:1,name:'歌',ar:[{name:'甲'},{name:'乙'}],al:{name:'专辑',picUrl:'http://example.com/a'},dt:1200}),{id:'1',name:'歌',artist:'甲 / 乙',album:'专辑',cover:'https://example.com/a',duration:1200});
+  assert.deepEqual(track({id:1,name:'歌',ar:[{id:10,name:'甲'},{id:11,name:'乙'}],al:{id:20,name:'专辑',picUrl:'http://example.com/a'},dt:1200}),{id:'1',name:'歌',artist:'甲 / 乙',artists:[{id:'10',name:'甲'},{id:'11',name:'乙'}],album:'专辑',albumId:'20',cover:'https://example.com/a',duration:1200});
   assert.equal(track({songId:2,simpleSong:{id:3,name:'云盘'}}).id,'2');
   assert.equal(tracks([{id:null},{id:'bad'},{id:2}]).length,1);
+});
+test('preserves artist identities when re-normalizing persisted songs',()=>{
+  const song=track({id:1,name:'歌',ar:[{id:10,name:'甲'}],al:{id:20,name:'专辑'}});
+  assert.deepEqual(track(song),song);
+  assert.deepEqual(track({id:2,artist:'旧数据歌手'}).artists,[]);
 });
 test('escapes untrusted metadata and rejects unsafe images',()=>{
   assert.equal(escape('<img onerror="x">'), '&lt;img onerror=&quot;x&quot;&gt;');

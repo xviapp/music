@@ -105,7 +105,9 @@ public final class PlaybackService extends MediaSessionService {
                 JSONObject s=raw.getJSONObject(i),al=s.optJSONObject("album");JSONArray artists=s.optJSONArray("artists");StringBuilder names=new StringBuilder();
                 if(artists!=null)for(int j=0;j<artists.length();j++){if(j>0)names.append(" / ");names.append(artists.getJSONObject(j).optString("name"));}
                 normalized.put(new JSONObject().put("id",s.getString("id")).put("name",s.optString("name")).put("artist",names.toString())
-                        .put("album",al==null?"":al.optString("name")).put("cover",al==null?"":al.optString("picUrl").replace("http://","https://")));
+                        .put("album",al==null?"":al.optString("name")).put("cover",al==null?"":al.optString("picUrl").replace("http://","https://"))
+                        .put("artists",artists==null?new JSONArray():artists).put("albumId",al==null?"":al.optString("id",""))
+                        .put("duration",s.optLong("duration",s.optLong("dt",0))));
             }
             List<MediaItem> items=Tracks.items(normalized);
             handler.post(()->{if(player!=null&&settings.prefs.getBoolean("fm",false)){boolean ended=player.getPlaybackState()==Player.STATE_ENDED&&player.getPlayWhenReady();int next=player.getMediaItemCount();player.addMediaItems(items);if(ended&&!items.isEmpty()){player.seekTo(next,0);player.prepare();player.play();}}extending=false;});

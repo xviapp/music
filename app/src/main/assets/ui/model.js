@@ -14,7 +14,9 @@ export function track(song) {
   return {
     id: String(song.songId || source.id), name: source.name || song.songName || '未知歌曲',
     artist: artists.map(a => a.name).join(' / ') || song.artist || '',
+    artists: artists.map(a => ({id:String(a.id||''),name:String(a.name||'')})).filter(a=>a.name),
     album: album.name || (typeof song.album === 'string' ? song.album : ''),
+    albumId: String(album.id || song.albumId || ''),
     cover: imageUrl(album.picUrl || source.picUrl || song.cover),
     duration: source.dt || source.duration || 0,
   };

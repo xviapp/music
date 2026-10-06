@@ -16,4 +16,7 @@ public class DirectApiTest {
     @Test public void search()throws Exception{JSONObject result=api.request("/cloudsearch",new JSONObject().put("keywords","晴天").put("limit",2));assertTrue(result.getJSONObject("result").getJSONArray("songs").length()>0);}
     @Test public void lyrics()throws Exception{JSONObject result=api.request("/lyric",new JSONObject().put("id",347230));assertEquals(200,result.getInt("code"));}
     @Test public void qrKey()throws Exception{JSONObject result=api.request("/login/qr/key",new JSONObject());assertFalse(result.getJSONObject("data").getString("unikey").isEmpty());}
+    @Test public void rankings()throws Exception{JSONObject result=api.request("/toplist",new JSONObject());assertTrue(result.getJSONArray("list").length()>0);}
+    @Test public void songComments()throws Exception{JSONObject result=api.request("/comment/music",new JSONObject().put("id",186016).put("limit",2));assertEquals(200,result.getInt("code"));assertTrue(result.has("comments"));}
+    @Test public void searchSuggestions()throws Exception{JSONObject result=api.request("/search/suggest",new JSONObject().put("keywords","晴天"));assertTrue(result.getJSONObject("result").getJSONArray("allMatch").length()>0);}
 }

@@ -1,5 +1,14 @@
 plugins { id 'com.android.application' }
 
+def releaseSigningFile = rootProject.file('.signing/release.properties')
+def releaseSigningProperties = new Properties()
+if (releaseSigningFile.exists()) {
+    releaseSigningFile.withInputStream { releaseSigningProperties.load(it) }
+}
+def releaseSigningReady = ['storeFile', 'storePassword', 'keyAlias', 'keyPassword'].every {
+    releaseSigningProperties.getProperty(it)?.trim()
+}
+
 android {
     namespace 'app.xvi.music'
     compileSdk 36
@@ -16,8 +25,30 @@ android {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
     }
+    signingConfigs {
+        release {
+            if (releaseSigningReady) {
+                storeFile new File(releaseSigningFile.parentFile, releaseSigningProperties.getProperty('storeFile'))
+                storePassword releaseSigningProperties.getProperty('storePassword')
+                keyAlias releaseSigningProperties.getProperty('keyAlias')
+                keyPassword releaseSigningProperties.getProperty('keyPassword')
+                storeType 'PKCS12'
+            }
+        }
+    }
     buildTypes {
-        release { minifyEnabled false }
+        release {
+            minifyEnabled false
+            signingConfig signingConfigs.release
+        }
+    }
+}
+
+tasks.matching { it.name == 'validateSigningRelease' }.configureEach {
+    doFirst {
+        if (!releaseSigningReady) {
+            throw new GradleException('未配置 release 签名，请先运行 pnpm signing:init；已有签名密钥时请恢复 .signing 目录。')
+        }
     }
 }
 

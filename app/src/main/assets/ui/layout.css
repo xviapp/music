@@ -93,6 +93,43 @@ small,.muted{line-height:18px}
 .song-detail-actions{display:flex;flex-direction:column;gap:12px;margin-top:24px}
 .song-detail-actions .selected{background:var(--soft);color:var(--primary);border-color:var(--primary)}
 .song-detail-actions .selected svg{fill:currentColor}
+.artist-links{display:flex;flex-wrap:wrap;align-items:center;gap:0 4px;color:var(--muted)}
+.song-detail .artist-links{justify-content:center}
+.artist-link{color:var(--primary);padding:6px 0;min-height:44px;text-align:left;max-width:100%;overflow-wrap:anywhere;font-size:13px;line-height:20px}
+.artist-separator{color:var(--muted)}
+.artist-head{padding-bottom:8px}
+.artist-tabs{margin-top:8px}
+.artist-tabs .chip{padding-left:12px;padding-right:12px;flex-shrink:0}
+.artist-biography{margin-top:24px}
+.artist-biography h2{font-size:16px;line-height:24px}
+.artist-biography .description{overflow-wrap:anywhere}
+.setting.ranking-shortcut{border:1px solid var(--border);border-radius:12px;background:var(--surface);padding:12px 16px;margin-top:12px}
+.ranking-entry{display:flex;align-items:center;gap:14px;width:100%;padding:14px 0;text-align:left;border-bottom:1px solid var(--border)}
+.ranking-entry .artbox{width:64px;flex:0 0 64px}
+.ranking-title{min-width:0;flex:1}
+.ranking-title b{display:block;font-size:16px;line-height:24px;overflow-wrap:anywhere}
+.ranking-title small{display:block;margin-top:4px}
+.ranking-entry>svg{flex:0 0 22px;color:var(--muted)}
+.comments-song{display:flex;align-items:center;gap:14px;margin:8px 0 24px}
+.comments-song>.artbox{width:56px;flex:0 0 56px}
+.comments-song>div:last-child{min-width:0}
+.comments-song h2{font-size:16px;line-height:24px;overflow-wrap:anywhere}
+.comment-entry{display:flex;gap:12px;padding:16px 0;border-bottom:1px solid var(--border)}
+.comment-avatar{flex:0 0 36px}
+.comment-avatar .artbox{width:36px;border-radius:50%}
+.comment-body{flex:1;min-width:0}
+.comment-meta{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px;margin-bottom:8px}
+.comment-meta b{font-size:13px;line-height:20px;overflow-wrap:anywhere}
+.comment-meta small{margin-left:auto;white-space:nowrap}
+.comment-body p,.comment-body blockquote{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.8}
+.comment-body blockquote{margin:12px 0;padding:10px 12px;background:var(--soft);border-left:2px solid var(--border);border-radius:4px;color:var(--muted);font-size:13px}
+.comment-likes{display:block;text-align:right;margin-top:10px}
+.search-suggestions{margin:8px 0 16px;padding:0 12px;border:1px solid var(--border);border-radius:12px;background:var(--surface)}
+.search-suggestions button{display:flex;align-items:center;gap:12px;min-height:48px;width:100%;padding:10px 0;text-align:left;border-bottom:1px solid var(--border)}
+.search-suggestions button:last-child{border-bottom:0}
+.search-suggestions button span{flex:1;min-width:0;overflow-wrap:anywhere}
+.search-suggestions svg{flex:0 0 20px;width:20px;height:20px;color:var(--muted)}
+.suggestion-status{display:block;padding:8px 0;margin-bottom:12px;color:var(--muted);font-size:13px;text-align:left}
 .song.active .artbox{outline:1px solid var(--primary)}
 .primary,.secondary{min-height:48px;font-size:14px;line-height:20px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;gap:8px}
 .primary{border:1px solid var(--primary);padding:8px 16px}

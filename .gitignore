@@ -4,6 +4,7 @@ app/build/
 local.properties
 *.jks
 *.keystore
+.signing/
 node_modules/
 test-results/
 .idea/
