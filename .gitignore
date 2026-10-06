@@ -12,3 +12,7 @@ test-results/
 *.aab
 .env
 .env.*
+
+# Local reference repositories and UI prototype
+/references/
+/prototype/

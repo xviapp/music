@@ -57,6 +57,10 @@ adb shell am instrument -w \
 
 ## 目录
 
+项目根目录为 `music/`，可直接在本目录执行构建和测试。
+
+- `references/`：YesPlayMusic、WyPlayer、api-enhanced、musicbox 等本地参考项目，各自保留独立 Git 仓库。
+- `prototype/`：交互原型。
 - `app/src/main/java/app/xvi/music/MainActivity.java`：WebView UI 容器、Native bridge 和页面播放器控制。
 - `app/src/main/java/app/xvi/music/PlaybackService.java`：后台播放、媒体会话、通知、队列恢复、FM 补充和定时关闭。
 - `app/src/main/java/app/xvi/music/MusicApi.java`、`ApiCrypto.java`、`ApiRoutes.java`：api-enhanced 的客户端协议移植和接口白名单。
