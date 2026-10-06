@@ -14,6 +14,7 @@ const s={page:'home',title:'音乐',stack:[],scroll:0,settings:{theme:'system',q
   player:false,sheet:'',lyric:false,lines:[],lyricId:'',lyricError:'',likes:new Set(),qr:'',qrStatus:'',qrKey:'',request:0,
   playback:{queue:[],index:0,playing:false,position:0,duration:0,repeat:0,shuffle:false,error:'',sleep:0}};
 let qrTimer,toastTimer,pollGeneration=0,lyricRequest=0;
+let initialized=!isAndroid;
 const pendingSubscriptions=new Set();
 const artistRefs=new Map();
 const entitySubscriptions=new Map(),pendingEntities=new Set();
@@ -92,6 +93,7 @@ function content(){switch(s.page){case'home':return home();case'search':return s
 function player(){const song=current();if(!song)return '';return `<section class="overlay" aria-label="正在播放"><header class="header">${button('down','closeplayer','收起播放器')}<small>正在播放</small>${button('queue','queue','播放队列')}</header><div class="content">${s.lyric?`<div class="lyrics" id="lyrics">${s.lines.length?s.lines.map((l,i)=>`<button data-action="lyricseek:${i}" data-line="${i}">${e(l.text)}</button>`).join(''):empty(s.lyricError||'暂无歌词')}</div>`:`<div class="playercover">${art(song.cover)}</div>`}<div class="nowtitle"><div><h1>${e(song.name)}</h1><div class="artist-links">${artistLinks(song,'current')}</div></div>${button('heart','like',s.likes.has(song.id)?'取消喜欢':'喜欢',s.likes.has(song.id)?'liked':'')}</div><input id="seek" class="progress" type="range" min="0" max="${Math.max(1,s.playback.duration)}" value="${s.playback.position}" aria-label="播放进度"><div class="times"><span id="elapsed">${time(s.playback.position)}</span><span id="duration">${time(s.playback.duration)}</span></div>${s.playback.error?`<p class="description error" role="alert">${e(s.playback.error)}</p>`:''}<div class="controls">${button('repeat','repeat',['顺序播放','单曲循环','列表循环'][s.playback.repeat])}${button('previous','previous','上一首')}<button class="bigplay" data-action="toggle" aria-label="${s.playback.playing?'暂停':'播放'}">${s.playback.buffering?'<span class="spinner"><i></i><i></i><i></i></span>':icon(s.playback.playing?'pause':'play')}</button>${button('next','next','下一首')}${button('shuffle','shuffle','随机播放',s.playback.shuffle?'liked':'')}</div><div class="row between"><button data-action="lyrics">${s.lyric?'封面':'歌词'}</button><button data-action="comments:current">评论</button><button data-action="sleep">定时</button></div></div></section>`;}
 function sheet(){return `<div class="scrim" data-dismiss="sheet"><section class="sheet" role="dialog" aria-modal="true" aria-label="${s.sheet==='queue'?'播放队列':s.sheet==='sleep'?'定时关闭':'退出登录'}"><div class="handle"></div><div class="section"><h2>${s.sheet==='queue'?`播放队列 · ${s.playback.queue.length} 首`:s.sheet==='sleep'?'定时关闭':'退出登录'}</h2>${button('close','closesheet','关闭')}</div>${s.sheet==='queue'?s.playback.queue.map((song,i)=>`<div class="song ${i===s.playback.index?'active':''}"><button class="songtitle" data-action="queuedetail:${i}" aria-label="查看 ${e(song.name)}"><b>${e(song.name)}</b><small>${e(song.artist)}</small></button>${button('play',`jump:${i}`,`播放 ${song.name}`)}${button('close',`remove:${i}`,`移除 ${song.name}`)}</div>`).join('')||empty('播放队列为空'):s.sheet==='sleep'?[0,15,30,60,-1].map(n=>`<button class="setting" data-action="sleepvalue:${n}">${n===0?'关闭':n===-1?'播完当前歌曲':`${n} 分钟`}</button>`).join(''):'<p class="description">退出后清除本机账号、播放队列与最近播放。</p><button class="primary" data-action="logout">退出登录</button>'}</section></div>`;}
 function render(){
+  if(!initialized)return;
   const focusedQuery=s.page==='search'&&document.activeElement?.id==='query'?{start:document.activeElement.selectionStart,end:document.activeElement.selectionEnd}:null;
   const oldScroll=document.querySelector('main.content')?.scrollTop||0;
   const sub=!['home','search','library','settings'].includes(s.page);const song=current();
@@ -398,5 +400,15 @@ app.addEventListener('change',async event=>{try{if(event.target.id==='seek')awai
 document.addEventListener('keydown',event=>{if(event.key==='Escape')back();});
 document.addEventListener('visibilitychange',()=>{if(document.hidden)stopQr();else if(s.page==='account'&&!s.settings.loggedIn&&s.qr){s.qrStatus='请刷新二维码后继续登录';render();}});
 render();
-if(isAndroid){try{s.settings=await native('init');theme();try{await session();}catch(error){toast(error.message);}await loadHome();}catch(error){s.error=error.message;render();}}
+if(isAndroid){
+  try{
+    s.settings=await native('init');theme();initialized=true;s.busy=true;render();
+    await native('uiReady');
+    try{await session();}catch(error){toast(error.message);}
+    await loadHome();
+  }catch(error){
+    initialized=true;s.busy=false;s.error=error.message;render();
+    try{await native('uiReady');}catch{}
+  }
+}
 else{s.error='请安装 Android 应用使用音乐服务';render();}

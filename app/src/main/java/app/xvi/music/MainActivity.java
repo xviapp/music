@@ -30,10 +30,16 @@ public final class MainActivity extends ComponentActivity {
     private boolean ready=false;
     private boolean loginLaunched=false;
     @Override public void onCreate(Bundle saved){
-        super.onCreate(saved);settings=new Settings(this);web=new WebView(this);
-        root=new android.widget.FrameLayout(this);root.addView(web,new android.widget.FrameLayout.LayoutParams(-1,-1));setContentView(root);
+        settings=new Settings(this);
         String mode=settings.prefs.getString("theme","system");boolean systemDark=(getResources().getConfiguration().uiMode&android.content.res.Configuration.UI_MODE_NIGHT_MASK)==android.content.res.Configuration.UI_MODE_NIGHT_YES;
-        appearance(mode.equals("dark")||(mode.equals("system")&&systemDark));
+        boolean dark=mode.equals("dark")||(mode.equals("system")&&systemDark);
+        setTheme(dark?R.style.AppTheme_Dark:R.style.AppTheme_Light);
+        super.onCreate(saved);web=new WebView(this);
+        // Keep the native canvas visible until the themed HTML has actually painted.
+        web.setAlpha(0f);
+        root=new android.widget.FrameLayout(this);root.setBackgroundColor(dark?0xff191817:0xffF8F2E8);
+        root.addView(web,new android.widget.FrameLayout.LayoutParams(-1,-1));setContentView(root);
+        appearance(dark);
         if(Build.VERSION.SDK_INT>=33 && checkSelfPermission("android.permission.POST_NOTIFICATIONS")!=android.content.pm.PackageManager.PERMISSION_GRANTED)
             requestPermissions(new String[]{"android.permission.POST_NOTIFICATIONS"},1001);
         ViewCompat.setOnApplyWindowInsetsListener(root,(view,insets)->{androidx.core.graphics.Insets bars=insets.getInsets(WindowInsetsCompat.Type.systemBars()|WindowInsetsCompat.Type.ime());view.setPadding(bars.left,bars.top,bars.right,bars.bottom);return WindowInsetsCompat.CONSUMED;});
@@ -60,6 +66,16 @@ public final class MainActivity extends ComponentActivity {
         getOnBackPressedDispatcher().addCallback(this,new OnBackPressedCallback(true){@Override public void handleOnBackPressed(){web.evaluateJavascript("window.musicBack ? window.musicBack() : false",result->{if(!"true".equals(result))moveTaskToBack(true);});}});
     }
     private void dispatch(int id,String method,JSONObject args,JavaScriptReplyProxy reply){
+        if(method.equals("uiReady")){
+            web.postVisualStateCallback(id,new WebView.VisualStateCallback(){
+                @Override public void onComplete(long requestId){
+                    if(isDestroyed())return;
+                    web.setAlpha(1f);
+                    respond(reply,id,new JSONObject(),null);
+                }
+            });
+            return;
+        }
         if(method.equals("appearance")){appearance(args.optBoolean("dark"));respond(reply,id,new JSONObject(),null);return;}
         if(method.equals("player")){try{control(args);respond(reply,id,new JSONObject(),null);}catch(Exception e){respond(reply,id,null,e.getMessage());}return;}
         if(method.equals("officialLogin")){
@@ -83,7 +99,7 @@ public final class MainActivity extends ComponentActivity {
         }catch(Exception e){respond(reply,id,null,e.getMessage()==null?"操作失败，请重试":e.getMessage());}});
     }
     private void appearance(boolean dark){
-        int canvas=dark?0xff191817:0xffF8F2E8;root.setBackgroundColor(canvas);web.setBackgroundColor(canvas);
+        int canvas=dark?0xff191817:0xffF8F2E8;getWindow().setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(canvas));root.setBackgroundColor(canvas);web.setBackgroundColor(canvas);
         WindowInsetsControllerCompat bars=WindowCompat.getInsetsController(getWindow(),root);bars.setAppearanceLightStatusBars(!dark);bars.setAppearanceLightNavigationBars(!dark);
     }
     private void respond(JavaScriptReplyProxy reply,int id,Object value,String error){main.post(()->{if(isDestroyed())return;try{JSONObject result=new JSONObject().put("id",id);if(error==null)result.put("value",value);else result.put("error",error);reply.postMessage(result.toString());}catch(Exception ignored){}});}
