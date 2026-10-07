@@ -262,12 +262,23 @@ test('unknown playback duration is visibly unavailable and metadata duration is 
   assert.match(ui.player(),/定时 30 分钟/);
 });
 test('playlist and recommendation entries only load content',async()=>{
-  for(const name of ['homecard','daily','new','fm','cloud','likes','history']){
+  for(const name of ['homecard','daily','new','cloud','likes','history']){
     const ui=setup(),before=JSON.stringify(ui.s.playback);
     await ui.action(name,'0');
     assert.equal(ui.s.page,'collection',name);assert.equal(ui.calls.length,0,name);
     assert.equal(JSON.stringify(ui.s.playback),before,name);
   }
+});
+test('private FM opens the player directly and keeps the initial batch out of collection UI',async()=>{
+  const ui=setup({'/personal_fm':()=>({data:[song(21),song(22)]})});
+  await ui.action('fm');
+  assert.equal(ui.s.page,'home');
+  assert.equal(ui.s.collection,null);
+  assert.equal(ui.s.player,true);
+  assert.equal(ui.calls.length,1);
+  assert.equal(ui.calls[0].action,'queue');
+  assert.equal(ui.calls[0].fm,true);
+  assert.deepEqual(ui.calls[0].songs.map(item=>item.id),['21','22']);
 });
 test('adding and liking a viewed song do not seek or start playback',async()=>{
   const ui=setup(),before=JSON.stringify(ui.s.playback);
@@ -277,10 +288,12 @@ test('adding and liking a viewed song do not seek or start playback',async()=>{
   assert.equal(ui.requests.at(-1).params.id,'2');
   assert.equal(JSON.stringify(ui.s.playback),before);
 });
-test('only explicit play starts a new queue and preserves FM mode',async()=>{
-  const ui=setup();await ui.action('fm');await ui.action('song','0');
-  assert.equal(ui.calls.length,0);await ui.action('playdetail');
-  assert.equal(ui.calls[0].action,'queue');assert.equal(ui.calls[0].fm,true);
+test('opening private FM starts its queue in FM mode',async()=>{
+  const ui=setup();
+  await ui.action('fm');
+  assert.equal(ui.calls.length,1);
+  assert.equal(ui.calls[0].action,'queue');
+  assert.equal(ui.calls[0].fm,true);
   assert.equal(ui.s.player,true);
 });
 test('explicit queue-detail play jumps within the existing queue',async()=>{
