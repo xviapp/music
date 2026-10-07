@@ -43,10 +43,16 @@ final class Tracks {
             String message=cause.getMessage();
             error=message!=null&&message.matches(".*[\\u4e00-\\u9fff].*")?message:"播放失败，请检查网络后重试，或选择下一首";
         }
-        return new JSONObject().put("queue",queue).put("index",Math.max(0,player.getCurrentMediaItemIndex()))
+        long duration=Math.max(0,player.getDuration());
+        int index=Math.max(0,player.getCurrentMediaItemIndex());
+        if(duration==0&&index<player.getMediaItemCount()){
+            Bundle extras=player.getMediaItemAt(index).mediaMetadata.extras;
+            if(extras!=null)duration=Math.max(0,extras.getLong("duration",0));
+        }
+        return new JSONObject().put("queue",queue).put("index",index)
                 .put("playing",player.getPlayWhenReady()&&player.getPlaybackState()!=Player.STATE_ENDED&&player.getPlayerError()==null)
                 .put("buffering",player.getPlaybackState()==Player.STATE_BUFFERING)
-                .put("position",Math.max(0,player.getCurrentPosition())).put("duration",Math.max(0,player.getDuration()))
+                .put("position",Math.max(0,player.getCurrentPosition())).put("duration",duration)
                 .put("repeat",player.getRepeatMode()).put("shuffle",player.getShuffleModeEnabled()).put("error",error);
     }
 }

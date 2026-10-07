@@ -39,12 +39,12 @@ function setup(responders={}){
       if(route==='/song/detail')return {songs:[song(2)]};
       return {data:[song(2)]};
     }});
-  const ui=runInContext(`${source}\nrender=()=>{};toast=()=>{};({s,action,back,rows,sheet,songDetail,artistPage,artistLinks,player,favoritesPage,entitySubscriptionButton,rankingsPage,commentsPage,onSearchInput,fetchSuggestions,suggestionMarkup});`,context);
+  const ui=runInContext(`${source}\nrender=()=>{};toast=()=>{};({s,action,back,rows,sheet,songDetail,artistPage,artistLinks,player,favoritesPage,entitySubscriptionButton,rankingsPage,commentsPage,onSearchInput,fetchSuggestions,suggestionMarkup,tab,search,collection});`,context);
   ui.s.settings.loggedIn=true;
   ui.s.profile={userId:1};
   ui.s.playback={...ui.s.playback,queue:[song(1),song(4)],index:0,playing:true,position:12345};
   ui.s.songs=[song(2),song(3)];ui.s.history=[song(3)];ui.s.home=[{id:5,name:'歌单'}];
-  return {...ui,calls,requests,handlers,flushTimers:async()=>{const queued=[...timers.values()];timers.clear();for(const handler of queued)await handler();}};
+  return {...ui,node,calls,requests,handlers,flushTimers:async()=>{const queued=[...timers.values()];timers.clear();for(const handler of queued)await handler();}};
 }
 test('song, recent and queue titles browse without playback commands',async()=>{
   for(const name of ['song','recent','queuedetail']){
@@ -234,6 +234,32 @@ test('suggestions debounce typing and wait for Chinese composition to finish',as
   target.value='中文';ui.handlers.get('compositionend')({target});await ui.flushTimers();
   assert.equal(ui.requests.at(-1).params.keywords,'中文');
   ui.onSearchInput('');await ui.flushTimers();assert.equal(ui.s.suggestions.length,0);
+});
+test('top-level tabs restore search results, query and scroll position',async()=>{
+  const ui=setup();
+  await ui.action('tab','search');
+  ui.s.query='测试';
+  await ui.action('search');
+  ui.node.scrollTop=37;
+  assert.equal(ui.s.songs.length,1);
+  await ui.action('tab','settings');
+  await ui.action('tab','search');
+  assert.equal(ui.s.query,'测试');
+  assert.equal(ui.s.songs.length,1);
+  assert.equal(ui.s.type,1);
+  assert.equal(ui.node.scrollTop,37);
+});
+test('unknown playback duration is visibly unavailable and metadata duration is used when present',()=>{
+  const ui=setup();
+  ui.s.playback.queue=[{...song(1),duration:0}];ui.s.playback.index=0;ui.s.playback.position=120000;ui.s.player=true;
+  assert.match(ui.player(),/value="0"/);
+  assert.match(ui.player(),/--:--/);
+  assert.match(ui.player(),/disabled/);
+  ui.s.playback.queue[0].duration=180000;
+  assert.match(ui.player(),/3:00/);
+  ui.s.playback.repeat=1;ui.s.playback.sleep=30;
+  assert.match(ui.player(),/<b>1<\/b>/);
+  assert.match(ui.player(),/定时 30 分钟/);
 });
 test('playlist and recommendation entries only load content',async()=>{
   for(const name of ['homecard','daily','new','fm','cloud','likes','history']){
