@@ -1,0 +1,3 @@
+<inset xmlns:android="http://schemas.android.com/apk/res/android"
+    android:inset="21%"
+    android:drawable="@drawable/music_launcher_silhouette" />
