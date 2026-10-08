@@ -1,9 +1,0 @@
-Tool: built-in image_gen
-Approved artwork: rear-view blue-gray cat, tilted head, relaxed asymmetrical seated posture, one front paw gently supporting an amber headphone ear cup.
-Output: app/src/main/res/drawable-nodpi/music_launcher_v4.png
-Launcher: app/src/main/res/drawable/music_launcher_foreground.xml
-
-Final prompt:
-Edit the latest blue-gray rear-view cat with amber headphones on a warm paper-white background. Make one targeted posture change: one front paw gently touches and supports one headphone ear cup, while the other front paw rests low and naturally by its body. The raised foreleg is readable from behind, with a relaxed bent elbow, a gently curved forearm and a small rounded cat paw touching the cup. No human fingers or extra limbs. Preserve the tilted head, relaxed asymmetrical seated body, cat ears, loose curved tail, muted blue-gray cat (#526A75), warm amber headphones (#EBA16B), paper-white background (#F8F2E8), broad papercut shapes, subtle tactile texture and restrained shadows. No face visible. No additional objects, text, borders or watermark. One standalone square icon.
-
-The approved image is used directly. Android insets the artwork by 16.67% for adaptive launcher masks; the application icon and roundIcon share the same adaptive resource.

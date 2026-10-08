@@ -1,5 +1,0 @@
-Tool: built-in image_gen
-Edit target: icons/video-v11-launcher.png
-Output: app/src/main/res/drawable-nodpi/music_launcher_v3.png
-
-undefined
