@@ -25,3 +25,7 @@ test('playback structure excludes ticks but includes errors',()=>{
   const p={queue:[{id:'1'}],index:0,playing:false,position:0};
   assert.equal(playbackKey(p),playbackKey({...p,position:1000}));assert.notEqual(playbackKey(p),playbackKey({...p,error:'failed'}));
 });
+test('pairs translated lyrics by timestamp and skips identical or missing lines',()=>{
+  const l=lyrics('[00:01.00]Hello\n[00:02.00]World\n[00:03.00]纯音乐','[00:01.00]你好\n[00:03.00]纯音乐');
+  assert.equal(l[0].translation,'你好');assert.equal(l[1].translation,undefined);assert.equal(l[2].translation,undefined);
+});

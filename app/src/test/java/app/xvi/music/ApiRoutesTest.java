@@ -68,4 +68,11 @@ public class ApiRoutesTest {
     }
     @Test(expected=IllegalArgumentException.class)public void rejectsInvalidSubscriptionOperation()throws Exception{ApiRoutes.build("/playlist/subscribe",new JSONObject().put("id",123).put("t",0));}
     @Test(expected=IllegalArgumentException.class)public void rejectsInvalidPlaylistId()throws Exception{ApiRoutes.build("/playlist/subscribe",new JSONObject().put("id",0).put("t",1));}
+    @Test public void fmTrashAndHotSearchUseFixedRoutes()throws Exception{
+        var trash=ApiRoutes.build("/fm_trash",new JSONObject().put("id",12));
+        assertEquals("/api/radio/trash/add",trash.path());assertEquals(12,trash.data().getLong("songId"));assertEquals("RT",trash.data().getString("alg"));assertTrue(trash.web());
+        var hot=ApiRoutes.build("/search/hot/detail",new JSONObject());
+        assertEquals("/api/hotsearchlist/get",hot.path());assertTrue(hot.web());
+    }
+    @Test(expected=IllegalArgumentException.class)public void rejectsInvalidFmTrashId()throws Exception{ApiRoutes.build("/fm_trash",new JSONObject().put("id",0));}
 }

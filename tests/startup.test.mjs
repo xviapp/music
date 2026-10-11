@@ -1,10 +1,10 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {readFileSync} from 'node:fs';
+import {uiSource} from './ui-source.mjs';
 import {createContext,runInContext} from 'node:vm';
 import * as model from '../app/src/main/assets/ui/model.js';
 
-const source=readFileSync(new URL('../app/src/main/assets/ui/app.js',import.meta.url),'utf8').replace(/^import .*;\n/gm,'');
+const source=uiSource();
 
 for(const [mode,systemDark,expected] of [
   ['dark',false,'dark'],['light',true,'light'],['system',true,'dark'],['system',false,'light'],
@@ -23,8 +23,9 @@ for(const [mode,systemDark,expected] of [
       return {};
     },api:()=>new Promise(()=>{}),control:async()=>{},frames});
   // Keep the real bootstrap and theme code; replace only the DOM renderer.
-  const script=source.replace('  const focusedQuery=',
-    '  frames.push(document.documentElement.dataset.theme);return;\n  const focusedQuery=');
+  const script=source.replace('  const focusedQuery =',
+    '  frames.push(document.documentElement.dataset.theme);return;\n  const focusedQuery =');
+  assert.notEqual(script,source,'the render hook must exist');
   const startup=runInContext(`(async()=>{${script}})()`,context);
   context.window.onPlayback({queue:[],position:0,duration:0,repeat:0,shuffle:false});
   assert.equal(frames.length,0,'homepage must not paint with default light colors before saved settings arrive');

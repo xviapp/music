@@ -8,9 +8,10 @@ import android.os.Looper;
 import android.view.Gravity;
 import android.view.View;
 import android.webkit.CookieManager;
+import android.webkit.ValueCallback;
 import android.webkit.WebResourceRequest;
-import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
+import android.webkit.WebStorage;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
@@ -45,9 +46,7 @@ public final class LoginActivity extends ComponentActivity {
     @Override public void onCreate(Bundle saved) {
         super.onCreate(saved);
         settings = new Settings(this);
-        String mode = settings.prefs.getString("theme", "system");
-        boolean systemDark = (getResources().getConfiguration().uiMode & android.content.res.Configuration.UI_MODE_NIGHT_MASK) == android.content.res.Configuration.UI_MODE_NIGHT_YES;
-        boolean dark = mode.equals("dark") || (mode.equals("system") && systemDark);
+        boolean dark = settings.dark(getResources().getConfiguration());
         paper = dark ? Color.rgb(25, 24, 23) : Color.rgb(248, 242, 232);
         primary = dark ? Color.rgb(235, 161, 107) : Color.rgb(168, 73, 31);
         text = dark ? Color.rgb(238, 231, 221) : Color.rgb(48, 43, 38);
@@ -91,8 +90,8 @@ public final class LoginActivity extends ComponentActivity {
         options.setDatabaseEnabled(true);
         options.setAllowFileAccess(false);
         options.setAllowContentAccess(false);
-        options.setMixedContentMode(WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE);
-        if (android.os.Build.VERSION.SDK_INT >= 21) cookies.setAcceptThirdPartyCookies(web, true);
+        options.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
+        cookies.setAcceptThirdPartyCookies(web, true);
         web.setBackgroundColor(paper);
         web.setWebViewClient(new WebViewClient() {
             @Override public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
@@ -104,9 +103,6 @@ public final class LoginActivity extends ComponentActivity {
             @Override public void onPageFinished(WebView view, String url) {
                 finishWhenLoggedIn();
             }
-            @Override public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
-                return super.shouldInterceptRequest(view, request);
-            }
         });
         root.addView(web, new LinearLayout.LayoutParams(-1, 0, 1));
         setContentView(root);
@@ -114,8 +110,22 @@ public final class LoginActivity extends ComponentActivity {
         androidx.core.view.WindowInsetsControllerCompat barsController = androidx.core.view.WindowCompat.getInsetsController(getWindow(), root);
         barsController.setAppearanceLightStatusBars(!dark);
         barsController.setAppearanceLightNavigationBars(!dark);
-        web.loadUrl("https://music.163.com/#/login");
-        main.post(cookiePoll);
+        // Start from a clean web session: an old or expired MUSIC_U cookie must never count as a new login.
+        clearWebSession(cleared -> {
+            if (isFinishing() || isDestroyed()) return;
+            web.loadUrl("https://music.163.com/#/login");
+            main.post(cookiePoll);
+        });
+    }
+
+    /** Clears cookies and storage left by the official login page. Call on the main thread. */
+    static void clearWebSession(ValueCallback<Boolean> done) {
+        CookieManager cookies = CookieManager.getInstance();
+        WebStorage.getInstance().deleteAllData();
+        cookies.removeAllCookies(cleared -> {
+            cookies.flush();
+            if (done != null) done.onReceiveValue(cleared);
+        });
     }
 
     private boolean allowed(Uri uri) {

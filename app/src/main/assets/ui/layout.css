@@ -225,3 +225,25 @@ small,.muted{line-height:18px}
 .lyrics-follow{position:sticky;bottom:8px;width:auto;margin:8px auto 0;min-height:40px;padding:6px 14px;border-radius:999px;background:var(--primary);color:var(--on);font-size:13px;box-shadow:0 4px 12px var(--overlay)}
 .setting.selected{background:var(--soft);color:var(--primary)}
 @media(max-width:380px){.quick.compact{padding-left:4px;padding-right:4px}.quick.compact small{display:none}.collection-head{gap:12px}.collection-head .collection-art .artbox{width:96px}.collection-info .collection-actions{gap:6px}.collection-info .collection-actions .primary,.collection-info .collection-actions .secondary{padding-left:9px;padding-right:9px}}
+.mini{position:relative}
+.mini-progress{position:absolute;left:0;right:0;top:-1px;height:2px;overflow:hidden;pointer-events:none}
+.mini-progress i{display:block;height:100%;background:var(--primary);transform:scaleX(0);transform-origin:left}
+.overlay .row.between.four{grid-template-columns:repeat(4,1fr)}
+.overlay .row.between.four>button{text-align:center;display:inline-flex;align-items:center;justify-content:center;gap:4px}
+.overlay .row.between.four>button svg{width:18px;height:18px}
+.lyrics button small{display:block;margin-top:4px;font-size:14px;font-weight:400;color:var(--muted)}
+.lyrics button.active small{font-size:15px}
+.text-action{min-height:40px;padding:0 10px;font-size:13px;color:var(--primary)}
+.queue-row{background:var(--surface);position:relative}
+.queue-row .drag{display:grid;place-items:center;width:32px;min-height:48px;flex:0 0 32px;color:var(--muted);cursor:grab;touch-action:none}
+.queue-row .drag svg{width:20px;height:20px;stroke-width:3}
+.queue-row.dragging{z-index:1;box-shadow:0 6px 16px var(--overlay);border-radius:10px;transition:none}
+.queue-row:not(.dragging){transition:transform .15s ease}
+.chips.wrap{flex-wrap:wrap;overflow:visible;margin-top:0}
+.chips.wrap .chip{max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.hot-searches{list-style:none;margin:0 0 12px;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:12px}
+.hot-searches button{display:flex;align-items:center;gap:10px;width:100%;min-height:44px;text-align:left}
+.hot-searches b{width:18px;flex-shrink:0;color:var(--muted);font-size:13px;text-align:center}
+.hot-searches li:nth-child(-n+3) b{color:var(--primary)}
+.hot-searches span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media(prefers-reduced-motion:reduce){.queue-row:not(.dragging){transition:none}}
