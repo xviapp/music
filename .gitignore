@@ -8,6 +8,11 @@ local.properties
 node_modules/
 test-results/
 .idea/
+.kotlin/
+*.iml
+captures/
+.externalNativeBuild/
+*.hprof
 .DS_Store
 *.apk
 *.aab

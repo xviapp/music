@@ -4,31 +4,19 @@
 
 源码、界面资源和构建配置均在本目录维护；安装、测试与构建不依赖工作区其他项目或归档源码。
 
+[隐私说明](PRIVACY.md) · [免责声明](DISCLAIMER.md) · [贡献指南](CONTRIBUTING.md) · [安全策略](SECURITY.md) · [发布流程](docs/RELEASING.md)
+
 ## 最新更新
 
-### 2026-10-12
+### 2026-10-17
 
 #### 新增
 
-- 歌曲详情支持“下一首播放”；播放队列支持拖动排序和一键清空。
-- 私人 FM 提供“不喜欢”，减少类似推荐并切到下一首；通知栏和系统媒体控件新增“喜欢”，FM 模式下另有“不喜欢”。
-- 搜索页在输入前显示搜索历史和热门搜索；搜索历史保存在本机，可清除，退出登录时一并清除。
-- 歌词显示翻译；迷你播放条显示播放进度；定时关闭新增 45、90 分钟并显示剩余时间。
-- 设置新增“点击歌曲直接播放”，默认关闭，仍先打开歌曲详情。
-- 听过的音频在本机缓存，最多 512 MB，重复播放时少用流量。
-
-#### 优化
-
-- 歌单和喜欢的音乐“播放全部”会把整张歌单排入队列（最多 1000 首），未加载的歌曲在后台补齐。
-- 遇到无版权或仅可试听的歌曲时自动跳到下一首并提示，连续 3 首失败后停止跳过；私人 FM 会先补充歌曲再跳过。
-- 切换音质后立即按新音质重新加载当前歌曲，同一首歌的分段请求不再混用两种音质。
-- 播放进度与播放队列分开同步，暂停时不再频繁传输和保存整个队列。
-- 歌单刷新时保留返回路径；部分歌曲不可用时，“加载更多”不再重复请求同一批歌曲。
+- 项目采用 MIT 协议，补充隐私说明、免责声明、安全反馈、贡献和发布指引。
 
 #### 修复
 
-- 退出登录后会清除官方登录网页的 Cookie；每次打开官方登录都从全新会话开始，不会自动登回旧账号或沿用已过期的登录。
-- 官方登录页禁止加载混合内容。
+- “关于”页面显示当前安装版本，避免升级后仍显示旧版本号。
 
 完整历史见[更新记录](docs/releases/release-notes.md)。
 
@@ -37,7 +25,7 @@
 需要 JDK 21 和 Android SDK 36，仓库已包含 Gradle wrapper。配置 `JAVA_HOME` 和 `ANDROID_HOME`，或在不纳入 Git 的 `local.properties` 中设置 `sdk.dir`：
 
 ```sh
-pnpm build:android
+npm run build:android
 ```
 
 该命令调用仓库内的 Gradle wrapper，构建 Android 调试 APK，不自动安装到设备。也可以直接运行 `./gradlew :app:assembleDebug`。
@@ -45,7 +33,7 @@ pnpm build:android
 构建 release APK：
 
 ```sh
-pnpm build:android:release
+npm run build:android:release
 ```
 
 release 使用本机 `.signing/release.properties` 中配置的 PKCS12 密钥，产物位于 `app/build/outputs/apk/release/app-release.apk`。未配置签名时 release 构建会报错，不会自动降级为 unsigned 或 debug 签名。
@@ -53,7 +41,7 @@ release 使用本机 `.signing/release.properties` 中配置的 PKCS12 密钥，
 首次配置本机签名（已有密钥时应恢复备份，不要生成新密钥）：
 
 ```sh
-pnpm signing:init
+npm run signing:init
 ```
 
 该命令生成 RSA 3072 位签名密钥和随机密码，拒绝覆盖已有文件。`.signing/music-release.p12` 与 `.signing/release.properties` 均不进入 Git，文件仅允许当前用户读写。请将整个 `.signing` 目录安全备份；后续版本必须继续使用同一密钥，丢失密钥可能导致无法升级已安装的应用。不要在日志或聊天中公开密码文件。
@@ -68,13 +56,16 @@ npm test
 ./gradlew :app:assembleDebugAndroidTest
 ```
 
-连接设备后，明确选择运行联网测试：
+连接设备后，明确选择运行联网测试。默认构建不会访问真实接口：
 
 ```sh
 adb shell am instrument -w \
+  -e realNetwork true \
   -e class app.xvi.music.DirectApiTest \
   app.xvi.music.test/androidx.test.runner.AndroidJUnitRunner
 ```
+
+需要验证登录网页和 Cookie 清理时，分别传入 `-e realNetwork true` 或 `-e destructiveTests true`。这些测试会访问第三方服务或修改测试设备上的 WebView 会话，应只在专用设备运行。
 
 ## 已实现
 
@@ -94,11 +85,9 @@ adb shell am instrument -w \
 
 项目根目录为 `music/`，可直接在本目录执行构建和测试。
 
-- `references/`：YesPlayMusic、WyPlayer、api-enhanced、musicbox 等本地参考项目，各自保留独立 Git 仓库。
-- `prototype/`：交互原型。
 - `app/src/main/java/app/xvi/music/MainActivity.java`：WebView UI 容器、Native bridge 和页面播放器控制。
 - `app/src/main/java/app/xvi/music/PlaybackService.java`：后台播放、媒体会话、通知按钮、音频缓存、队列恢复、FM 补充、不可播放歌曲跳过和定时关闭；判断规则在 `PlaybackRules.java`，FM 歌曲归一化在 `SongJson.java`。
-- `app/src/main/java/app/xvi/music/MusicApi.java`、`ApiCrypto.java`、`ApiRoutes.java`：api-enhanced 的客户端协议移植和接口白名单。
+- `app/src/main/java/app/xvi/music/MusicApi.java`、`ApiCrypto.java`、`ApiRoutes.java`：网易云协议客户端、请求加密和接口白名单。
 - `app/src/main/assets/ui/`：按原型整理的页面、样式和只处理展示的 JS；不直接访问网络。`state.js` 保存界面状态，`components.js` 和 `views.js` 只生成页面标记，`app.js` 负责渲染、导航、加载和操作，`model.js` 处理数据归一化。
 - `app/src/test/`、`tests/`：加密向量、路由安全、接口错误映射、播放规则、歌词解析、展示数据归一化和界面操作测试。`tests/ui-harness.mjs` 在 Node VM 中加载全部界面模块。
 
@@ -108,4 +97,6 @@ adb shell am instrument -w \
 
 ## 来源与许可
 
-接口协议与路由组织参考 NeteaseCloudMusicApiEnhanced，功能结构参考 YesPlayMusic。参考项目不属于本仓库，构建不依赖这些项目。对应 MIT 文本见 [THIRD_PARTY_NOTICES](THIRD_PARTY_NOTICES)。应用不复制 YesPlayMusic 的前端代码。
+本项目代码以 [MIT License](LICENSE) 发布。`ApiCrypto` 和 `ApiRoutes` 的协议实现参考并移植了 NeteaseCloudMusicApiEnhanced，因此必须保留其 MIT 归属和许可文本；其他运行时与测试依赖见 [THIRD_PARTY_NOTICES](THIRD_PARTY_NOTICES)。
+
+项目不随仓库发布本地参考项目；`references/`、`prototype/`、`.signing/`、`local.properties` 和构建目录均属于开发者本地环境，不应加入公开压缩包或 Git 提交。

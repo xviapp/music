@@ -1,3 +1,11 @@
+# 第三方许可声明
+
+## NeteaseCloudMusicApiEnhanced
+
+`ApiCrypto` 和 `ApiRoutes` 中的请求协议实现参考并移植了 NeteaseCloudMusicApiEnhanced 的公开实现。该部分的 MIT 归属和许可文本必须保留，不能为了隐藏协议名称而删除。
+
+来源：https://github.com/Binaryify/NeteaseCloudMusicApiEnhanced
+
 The MIT License (MIT)
 
 Copyright (c) 2013-2022 Binaryify
@@ -19,3 +27,18 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
+
+## Apache-2.0 components
+
+The application includes the following Apache-2.0 dependencies. The license text is available at https://www.apache.org/licenses/LICENSE-2.0:
+
+- AndroidX Activity and WebKit
+- AndroidX Test Runner and AndroidX Test Ext JUnit
+- AndroidX Media3 ExoPlayer and MediaSession
+- ZXing Core
+- Guava and other Apache-2.0 transitive dependencies
+
+## Test-only components
+
+- JUnit 4: Eclipse Public License 1.0, https://www.eclipse.org/legal/epl-v10.html
+- `org.json`: JSON license, https://github.com/stleary/JSON-java/blob/master/LICENSE

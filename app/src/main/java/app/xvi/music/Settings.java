@@ -55,6 +55,7 @@ public final class Settings {
         return new JSONObject().put("background", background())
                 .put("theme", prefs.getString("theme", "system")).put("quality", prefs.getString("quality", "exhigh"))
                 .put("tapPlay", prefs.getBoolean("tapPlay", false))
+                .put("version", BuildConfig.VERSION_NAME)
                 .put("loggedIn", cookie().contains("MUSIC_U="));
     }
     public void update(JSONObject value) throws Exception {

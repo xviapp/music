@@ -16,8 +16,8 @@ android {
         applicationId 'app.xvi.music'
         minSdk 26
         targetSdk 36
-        versionCode 1
-        versionName '0.1.0'
+        versionCode 2
+        versionName '0.2.0'
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
     }
     buildFeatures { buildConfig true }
@@ -28,7 +28,8 @@ android {
     signingConfigs {
         release {
             if (releaseSigningReady) {
-                storeFile new File(releaseSigningFile.parentFile, releaseSigningProperties.getProperty('storeFile'))
+                def configuredStoreFile = new File(releaseSigningProperties.getProperty('storeFile'))
+                storeFile configuredStoreFile.isAbsolute() ? configuredStoreFile : new File(releaseSigningFile.parentFile, configuredStoreFile.path)
                 storePassword releaseSigningProperties.getProperty('storePassword')
                 keyAlias releaseSigningProperties.getProperty('keyAlias')
                 keyPassword releaseSigningProperties.getProperty('keyPassword')
@@ -47,7 +48,7 @@ android {
 tasks.matching { it.name == 'validateSigningRelease' }.configureEach {
     doFirst {
         if (!releaseSigningReady) {
-            throw new GradleException('未配置 release 签名，请先运行 pnpm signing:init；已有签名密钥时请恢复 .signing 目录。')
+            throw new GradleException('未配置 release 签名，请先运行 npm run signing:init；已有签名密钥时请恢复 .signing 目录。')
         }
     }
 }

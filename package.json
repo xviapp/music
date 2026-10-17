@@ -1,7 +1,11 @@
 {
   "name": "app.xvi.music",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.2.0",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  },
   "type": "module",
   "scripts": {
     "build:android": "./gradlew :app:assembleDebug",

@@ -13,10 +13,16 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static org.junit.Assert.*;
+import static org.junit.Assume.assumeTrue;
 
 /** Exercises the same activity startup used by the official-login button. */
 @RunWith(AndroidJUnit4.class)
 public class LoginActivityTest {
+    @org.junit.Before public void requireOptIn(){
+        assumeTrue("Pass -e realNetwork true to run official-login checks",
+                "true".equals(InstrumentationRegistry.getArguments().getString("realNetwork")));
+    }
+
     private static void foregroundMain() throws Exception {
         // Start as the user would, so OEM background-launch restrictions do not
         // block the internal login activity before its onCreate is exercised.

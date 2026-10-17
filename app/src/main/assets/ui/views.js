@@ -342,7 +342,7 @@ const PRIVACY = [
   '应用不上传通讯录或本地文件，不集成广告与统计 SDK。播放权限由音乐服务与账号决定。',
 ];
 
-const LICENSE = 'NeteaseCloudMusicApiEnhanced\nCopyright (c) 2013-2022 Binaryify\n\nThe MIT License (MIT)\n\nPermission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.';
+const LICENSE = 'XviMusic\n\n本项目自行编写的代码以 MIT License 发布，完整文本见项目根目录 LICENSE。\n\n第三方归属\n\nApiCrypto 和 ApiRoutes 的协议实现参考并移植了 NeteaseCloudMusicApiEnhanced，必须保留其 MIT 版权和许可声明。完整文本见项目根目录 THIRD_PARTY_NOTICES。\n\nAndroidX、Media3、ZXing 和其他构建依赖的许可也列在 THIRD_PARTY_NOTICES 中。';
 
 function content() {
   switch (s.page) {
@@ -354,9 +354,9 @@ function content() {
     case 'account': return account();
     case 'privacy': return `<h2>隐私说明</h2>${PRIVACY.map(text => `<p class="description">${text}</p>`).join('')}`;
     case 'about': return html`
-      <h2>音乐 0.1.0</h2>
+      <h2>音乐 ${e(s.settings.version || '')}</h2>
       <p class="description">Android 音乐播放器</p>
-      <p class="description">接口实现参考 NeteaseCloudMusicApiEnhanced（MIT），功能组织参考 YesPlayMusic。音频播放使用 AndroidX Media3；二维码由 ZXing 生成。</p>
+      <p class="description">接口协议实现包含 NeteaseCloudMusicApiEnhanced 的归属部分；音频播放使用 AndroidX Media3，二维码由 ZXing 生成。完整许可见开源许可页面。</p>
       <button class="primary" data-action="license">开源许可</button>`;
     case 'license': return `<p class="description">${e(LICENSE)}</p>`;
     default: return '';

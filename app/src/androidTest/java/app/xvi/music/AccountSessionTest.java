@@ -10,10 +10,16 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static org.junit.Assert.*;
+import static org.junit.Assume.assumeTrue;
 
 /** Logging out must not leave a web session that would silently log the old account back in. */
 @RunWith(AndroidJUnit4.class)
 public class AccountSessionTest {
+    @org.junit.Before public void requireOptIn(){
+        assumeTrue("Pass -e destructiveTests true to run account-session checks",
+                "true".equals(InstrumentationRegistry.getArguments().getString("destructiveTests")));
+    }
+
     @Test public void logoutClearsAccountAndWebLoginCookies() throws Exception {
         Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
         Settings settings = new Settings(context);
