@@ -54,7 +54,7 @@ tasks.matching { it.name == 'validateSigningRelease' }.configureEach {
 }
 
 dependencies {
-    implementation 'com.google.zxing:core:3.5.3'
+    implementation 'com.google.zxing:core:3.5.4'
     implementation 'androidx.activity:activity:1.11.0'
     implementation 'androidx.webkit:webkit:1.14.0'
     implementation 'androidx.media3:media3-exoplayer:1.9.0'
