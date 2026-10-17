@@ -1,0 +1,15 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="1280"
+    android:viewportHeight="1280">
+    <!-- Headband remains separate from the head through a generous open gap. -->
+    <path android:fillColor="#FFFFFFFF"
+        android:pathData="M 391,270 C 451,154 580,102 705,121 C 797,132 869,184 911,256 L 864,276 C 824,216 765,181 699,174 C 588,154 487,204 441,293 Z" />
+    <!-- Back-facing cat, raised rounded paw, and compact curled tail. -->
+    <path android:fillColor="#FFFFFFFF" android:fillType="evenOdd"
+        android:pathData="M 490,305 C 475,262 490,144 518,78 C 535,36 564,53 607,104 C 638,142 660,183 675,229 C 724,229 776,250 811,281 C 887,260 973,224 1003,243 C 1027,266 990,347 951,405 L 887,435 C 892,530 865,605 812,632 C 794,642 773,648 752,647 C 793,695 816,754 830,816 C 865,831 885,858 895,894 C 926,918 933,963 921,1009 C 911,1043 894,1070 873,1091 C 921,1094 954,1084 977,1065 C 950,1080 920,1061 928,1035 C 940,992 1005,990 1041,1021 C 1091,1067 1060,1128 1016,1152 C 925,1204 692,1200 581,1140 C 527,1146 439,1146 382,1137 C 291,1124 252,1066 250,982 C 246,902 271,834 311,815 C 327,806 342,810 351,814 L 425,709 C 361,701 316,679 291,634 C 263,582 284,530 303,481 C 284,429 307,375 352,378 C 389,374 408,400 396,438 C 376,485 383,532 413,575 L 467,569 C 438,538 419,512 413,484 C 470,485 501,403 490,305 Z" />
+    <!-- Simplified earcups with clear negative space beside the cat's head. -->
+    <path android:fillColor="#FFFFFFFF"
+        android:pathData="M 415,254 C 454,246 476,273 474,312 C 472,357 448,416 420,439 L 419,404 C 419,373 397,354 367,354 L 347,356 C 349,315 377,261 415,254 Z M 944,454 C 971,445 994,468 994,503 C 994,554 963,612 929,629 C 894,646 872,626 874,594 C 875,548 909,468 944,454 Z" />
+</vector>

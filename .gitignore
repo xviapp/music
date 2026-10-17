@@ -1,0 +1,24 @@
+.gradle/
+build/
+app/build/
+local.properties
+*.jks
+*.keystore
+.signing/
+node_modules/
+test-results/
+.idea/
+.kotlin/
+*.iml
+captures/
+.externalNativeBuild/
+*.hprof
+.DS_Store
+*.apk
+*.aab
+.env
+.env.*
+
+# Local reference repositories and UI prototype
+/references/
+/prototype/

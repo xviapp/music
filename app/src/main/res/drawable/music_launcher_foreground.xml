@@ -1,0 +1,5 @@
+<inset xmlns:android="http://schemas.android.com/apk/res/android"
+    android:inset="23%">
+    <bitmap android:src="@drawable/music_launcher_flat"
+        android:gravity="fill" />
+</inset>
