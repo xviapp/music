@@ -15,7 +15,24 @@ npm test
 JAVA_HOME=/path/to/jdk-21 ./gradlew :app:testDebugUnitTest :app:lintDebug :app:assembleDebug
 ```
 
-真实联网测试默认不运行，因为它依赖第三方服务并可能修改 WebView 会话。需要手动验证时，参见 README 中的显式联网测试命令。
+### 设备测试
+
+编译设备测试 APK：
+
+```sh
+./gradlew :app:assembleDebugAndroidTest
+```
+
+将应用和测试 APK 安装到专用测试设备后，可显式运行真实接口检查：
+
+```sh
+adb shell am instrument -w \
+  -e realNetwork true \
+  -e class app.xvi.music.DirectApiTest \
+  app.xvi.music.test/androidx.test.runner.AndroidJUnitRunner
+```
+
+`DirectApiTest` 只做只读检查，二维码测试仅申请密钥，不会自动登录。`LoginActivityTest` 同样需要 `-e realNetwork true`；`AccountSessionTest` 需要 `-e destructiveTests true`，会修改设备上的 WebView 会话。这些测试默认跳过。
 
 ## 提交变更
 

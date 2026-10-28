@@ -2,7 +2,7 @@
 
 ## NeteaseCloudMusicApiEnhanced
 
-`ApiCrypto` 和 `ApiRoutes` 中的请求协议实现参考并移植了 NeteaseCloudMusicApiEnhanced 的公开实现。该部分的 MIT 归属和许可文本必须保留，不能为了隐藏协议名称而删除。
+`ApiCrypto` 和 `ApiRoutes` 中的请求协议实现移植自 NeteaseCloudMusicApiEnhanced。其 MIT 版权和许可文本如下。
 
 来源：https://github.com/Binaryify/NeteaseCloudMusicApiEnhanced
 
