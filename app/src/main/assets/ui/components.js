@@ -47,8 +47,8 @@ export const button = (name, action, label, extra = '') =>
 
 const fallbackArt = () => '<svg class="art" viewBox="0 0 108 108" aria-hidden="true"><path d="M45 30 77 24V69C77 82 55 85 55 73C55 65 65 62 71 65V37L45 42V78C45 91 23 94 23 82C23 74 33 71 39 74V31Z"/></svg>';
 
-export const art = url => {
-  const src = imageUrl(url);
+export const art = (url, size = 360) => {
+  const src = imageUrl(url, size);
   return html`<div class="artbox">${src
     ? `<img loading="lazy" referrerpolicy="no-referrer" src="${e(src)}" alt=""><span class="art-fallback" hidden>${fallbackArt()}</span>`
     : fallbackArt()}</div>`;
@@ -80,8 +80,8 @@ export const loadMore = () =>
 
 export function rows(list = s.songs, action = 'song') {
   return list.map((song, i) => html`
-    <div class="song ${current()?.id === song.id ? 'active' : ''}">
-      <button class="songcover" data-action="${action}:${i}" aria-label="查看 ${e(song.name)}">${art(song.cover)}</button>
+    <div class="song ${current()?.id === song.id ? 'active' : ''}" data-song-id="${e(song.id)}">
+      <button class="songcover" data-action="${action}:${i}" aria-label="查看 ${e(song.name)}">${art(song.cover, 160)}</button>
       <button class="songtitle" data-action="${action}:${i}" aria-label="查看 ${e(song.name)}"><b>${e(song.name)}</b><small>${e(song.artist || song.album)}</small></button>
       ${button('play', `${action}play:${i}`, `播放 ${song.name}`)}
     </div>`).join('');

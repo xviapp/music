@@ -122,6 +122,7 @@ function render() {
     const previous = baseRegions.get(name);
     if (previous?.html === html) continue;
     const node = html ? elementFrom(html) : null;
+    if (previous?.node && node) reuseImages(previous.node, node);
     if (previous?.node) previous.node.remove();
     baseRegions.set(name, {html, node});
     if (node) {
@@ -160,6 +161,22 @@ function elementFrom(html) {
   const template = document.createElement('template');
   template.innerHTML = html;
   return template.content.firstElementChild;
+}
+function reuseImages(oldRoot, newRoot) {
+  if (!oldRoot?.querySelectorAll || !newRoot?.querySelectorAll) return;
+  const buckets = new Map();
+  for (const img of oldRoot.querySelectorAll('img[src]')) {
+    if (img.hidden) continue;
+    const src = img.getAttribute('src');
+    let list = buckets.get(src);
+    if (!list) buckets.set(src, list = []);
+    list.push(img);
+  }
+  if (!buckets.size) return;
+  for (const img of newRoot.querySelectorAll('img[src]')) {
+    const existing = buckets.get(img.getAttribute('src'))?.shift();
+    if (existing) img.replaceWith(existing);
+  }
 }
 function lockBackground() {
   for (const {node} of baseRegions.values()) if (node) node.inert = Boolean(playerElement || s.sheet);
@@ -814,6 +831,7 @@ async function start(list, index = 0, fm = false) {
   // The queue holds at most MAX_QUEUE songs; keep a window around the chosen one.
   const from = Math.max(0, Math.min(index, list.length - MAX_QUEUE));
   await control('queue', {songs: list.slice(from, from + MAX_QUEUE), index: index - from, fm});
+  s.playback.fm = Boolean(fm);
   s.player = true;
   render();
 }
@@ -1060,6 +1078,7 @@ async function action(name, value) {
     case 'clearqueue':
       fillGeneration++;
       await control('clear');
+      s.playback.fm = false;
       Object.assign(s, {sheet: '', player: false});
       render();
       toast('已清空播放队列');

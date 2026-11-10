@@ -17,6 +17,8 @@ public final class Settings {
     public Settings(Context context) { prefs = context.getSharedPreferences("music", Context.MODE_PRIVATE); }
     private static final int MAX_SEARCHES = 10;
     private static final java.util.Set<String> QUALITIES = java.util.Set.of("standard", "exhigh", "lossless", "hires");
+    private static String cachedEncrypted = "";
+    private static String cachedCookie = "";
 
     public boolean background() { return prefs.getBoolean("background", true); }
     /** Whether the saved theme, or the system setting when following it, is dark. */
@@ -36,20 +38,50 @@ public final class Settings {
         }
         return (SecretKey) store.getKey("music-account", null);
     }
-    public synchronized void setCookie(String value) throws Exception {
-        if (value.isEmpty()) { prefs.edit().remove("account").apply(); return; }
-        Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding"); cipher.init(Cipher.ENCRYPT_MODE, key());
-        String encrypted = Base64.encodeToString(cipher.getIV(), Base64.NO_WRAP) + ":"
-                + Base64.encodeToString(cipher.doFinal(value.getBytes(java.nio.charset.StandardCharsets.UTF_8)), Base64.NO_WRAP);
-        prefs.edit().putString("account", encrypted).apply();
+    public void setCookie(String value) throws Exception {
+        synchronized (Settings.class) {
+            if (value.isEmpty()) {
+                prefs.edit().remove("account").apply();
+                cachedEncrypted = "";
+                cachedCookie = "";
+                return;
+            }
+            Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+            cipher.init(Cipher.ENCRYPT_MODE, key());
+            String encrypted = Base64.encodeToString(cipher.getIV(), Base64.NO_WRAP) + ":"
+                    + Base64.encodeToString(cipher.doFinal(value.getBytes(java.nio.charset.StandardCharsets.UTF_8)), Base64.NO_WRAP);
+            prefs.edit().putString("account", encrypted).apply();
+            cachedEncrypted = encrypted;
+            cachedCookie = value;
+        }
     }
-    public synchronized String cookie() {
-        String value = prefs.getString("account", ""); if (value.isEmpty()) return "";
-        try {
-            String[] parts = value.split(":"); Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
-            cipher.init(Cipher.DECRYPT_MODE, key(), new GCMParameterSpec(128, Base64.decode(parts[0], Base64.NO_WRAP)));
-            return new String(cipher.doFinal(Base64.decode(parts[1], Base64.NO_WRAP)), java.nio.charset.StandardCharsets.UTF_8);
-        } catch (Exception e) { prefs.edit().remove("account").apply(); return ""; }
+    public String cookie() {
+        synchronized (Settings.class) {
+            String value = prefs.getString("account", "");
+            if (value.isEmpty()) {
+                cachedEncrypted = "";
+                cachedCookie = "";
+                return "";
+            }
+            if (value.equals(cachedEncrypted) && !cachedCookie.isEmpty()) return cachedCookie;
+            try {
+                String[] parts = value.split(":");
+                if (parts.length != 2) throw new IllegalArgumentException();
+                Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+                cipher.init(Cipher.DECRYPT_MODE, key(), new GCMParameterSpec(128, Base64.decode(parts[0], Base64.NO_WRAP)));
+                String plain = new String(cipher.doFinal(Base64.decode(parts[1], Base64.NO_WRAP)), java.nio.charset.StandardCharsets.UTF_8);
+                cachedEncrypted = value;
+                cachedCookie = plain;
+                return plain;
+            } catch (IllegalArgumentException | java.security.GeneralSecurityException e) {
+                prefs.edit().remove("account").apply();
+                cachedEncrypted = "";
+                cachedCookie = "";
+                return "";
+            } catch (Exception e) {
+                return "";
+            }
+        }
     }
     public JSONObject publicState() throws Exception {
         return new JSONObject().put("background", background())

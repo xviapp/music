@@ -14,6 +14,9 @@ test('preserves artist identities when re-normalizing persisted songs',()=>{
 test('escapes untrusted metadata and rejects unsafe images',()=>{
   assert.equal(escape('<img onerror="x">'), '&lt;img onerror=&quot;x&quot;&gt;');
   assert.equal(imageUrl('javascript:alert(1)'),'');assert.equal(imageUrl('file:///data/private'),'');
+  assert.equal(imageUrl('http://p1.music.126.net/cover.jpg',160),'https://p1.music.126.net/cover.jpg?param=160y160');
+  assert.equal(imageUrl('https://p2.music.126.net/cover.jpg?param=50y50',160),'https://p2.music.126.net/cover.jpg?param=50y50');
+  assert.equal(imageUrl('https://example.com/cover.jpg',160),'https://example.com/cover.jpg');
 });
 test('parses timestamps and repeated LRC lines',()=>{
   const l=lyrics('[ar:test]\n[00:02.01][01:03.123]你好\n[00:01]开始');
@@ -26,6 +29,6 @@ test('playback structure excludes ticks but includes errors',()=>{
   assert.equal(playbackKey(p),playbackKey({...p,position:1000}));assert.notEqual(playbackKey(p),playbackKey({...p,error:'failed'}));
 });
 test('pairs translated lyrics by timestamp and skips identical or missing lines',()=>{
-  const l=lyrics('[00:01.00]Hello\n[00:02.00]World\n[00:03.00]纯音乐','[00:01.00]你好\n[00:03.00]纯音乐');
-  assert.equal(l[0].translation,'你好');assert.equal(l[1].translation,undefined);assert.equal(l[2].translation,undefined);
+  const l=lyrics('[00:01.00]Hello\n[00:02.00]World\n[00:03.00]纯音乐\n[00:04.00]Instrumental','[00:01.00]你好\n[00:03.00]纯音乐\n[00:04.00]//');
+  assert.equal(l[0].translation,'你好');assert.equal(l[1].translation,undefined);assert.equal(l[2].translation,undefined);assert.equal(l[3].translation,undefined);
 });

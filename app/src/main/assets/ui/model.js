@@ -1,10 +1,14 @@
 export function escape(value = '') {
   return String(value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
-export function imageUrl(value) {
+export function imageUrl(value, size = 0) {
   try {
     const url = new URL(String(value).replace(/^http:/, 'https:'));
-    return url.protocol === 'https:' ? url.href : '';
+    if (url.protocol !== 'https:') return '';
+    if (size > 0 && !url.search && (url.hostname === 'music.126.net' || url.hostname.endsWith('.music.126.net'))) {
+      url.search = `param=${size}y${size}`;
+    }
+    return url.href;
   } catch { return ''; }
 }
 export function track(song) {
@@ -36,12 +40,20 @@ function parseLyrics(text = '') {
 export function lyrics(text = '', translation = '') {
   const lines = parseLyrics(text);
   if (!translation) return lines;
-  const translated = new Map(parseLyrics(translation).map(line => [line.time, line.text]));
+  const translated = new Map(parseLyrics(translation).filter(line => line.text !== '//').map(line => [line.time, line.text]));
   return lines.map(line => translated.has(line.time) && translated.get(line.time) !== line.text ? {...line, translation: translated.get(line.time)} : line);
 }
 export function lyricIndex(lines, position) {
-  let index = -1;
-  for (let i=0; i<lines.length && lines[i].time<=position; i++) index=i;
+  let low = 0, high = lines.length - 1, index = -1;
+  while (low <= high) {
+    const mid = (low + high) >> 1;
+    if (lines[mid].time <= position) {
+      index = mid;
+      low = mid + 1;
+    } else {
+      high = mid - 1;
+    }
+  }
   return index;
 }
 export function time(ms) {

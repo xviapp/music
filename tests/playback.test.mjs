@@ -78,8 +78,9 @@ test('search history and hot searches show before typing and start a search',asy
 test('personal FM offers a dislike that targets the current song',async()=>{
   const ui=setup();ui.s.player=true;
   assert.doesNotMatch(ui.player(),/data-action="trash"/);
-  ui.s.playback.fm=true;assert.match(ui.player(),/data-action="trash"/);
-  await ui.action('trash');assert.equal(ui.calls[0].action,'trash');assert.equal(ui.calls[0].id,'1');
+  await ui.action('fm');assert.equal(ui.s.playback.fm,true);assert.match(ui.player(),/data-action="trash"/);
+  await ui.action('trash');assert.equal(ui.calls.at(-1).action,'trash');assert.equal(ui.calls.at(-1).id,'1');
+  await ui.action('recentplay','0');assert.equal(ui.s.playback.fm,false);assert.doesNotMatch(ui.player(),/data-action="trash"/);
 });
 test('likes are shared with the notification and updated from it',async()=>{
   const ui=setup();await ui.action('likedetail');await ui.action('song','0');await ui.action('likedetail');

@@ -30,17 +30,22 @@ public final class MainActivity extends ComponentActivity {
     private WebView web;
     private android.widget.FrameLayout root;
     private Settings settings;
+    private MusicApi api;
     private MediaController player;
     private ListenableFuture<MediaController> future;
     private final ExecutorService io = Executors.newFixedThreadPool(3);
     private final Handler main = new Handler(Looper.getMainLooper());
+    private final androidx.activity.result.ActivityResultLauncher<Intent> loginLauncher = registerForActivityResult(
+            new androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult(),
+            result -> syncLogin());
     private boolean ready = false;
+    private boolean started = false;
     /** The page has the current queue; afterwards it is only resent when the timeline changes. */
     private boolean queueSent = false;
-    private boolean loginLaunched = false;
 
     @Override public void onCreate(Bundle saved) {
         settings = new Settings(this);
+        api = new MusicApi(settings);
         boolean dark = settings.dark(getResources().getConfiguration());
         setTheme(dark ? R.style.AppTheme_Dark : R.style.AppTheme_Light);
         super.onCreate(saved);
@@ -163,8 +168,7 @@ public final class MainActivity extends ComponentActivity {
                 }
                 return;
             case "officialLogin":
-                loginLaunched = true;
-                main.post(() -> startActivity(new Intent(this, LoginActivity.class)));
+                main.post(() -> loginLauncher.launch(new Intent(this, LoginActivity.class)));
                 respond(reply, id, new JSONObject(), null);
                 return;
             default:
@@ -187,7 +191,7 @@ public final class MainActivity extends ComponentActivity {
                 return settings.publicState();
             case "api": {
                 JSONObject params = args.optJSONObject("params");
-                return new MusicApi(settings).request(args.getString("route"), params == null ? new JSONObject() : params);
+                return api.request(args.getString("route"), params == null ? new JSONObject() : params);
             }
             case "history": return new JSONArray(settings.prefs.getString("history", "[]"));
             case "searches": return settings.searches();
@@ -371,7 +375,17 @@ public final class MainActivity extends ComponentActivity {
     private JSONObject withSleep(JSONObject state) throws JSONException {
         int sleep = settings.prefs.getInt("sleep", 0);
         long remaining = sleep > 0 ? Math.max(0, settings.prefs.getLong("sleepDeadline", 0) - System.currentTimeMillis()) : 0;
-        return state.put("sleep", sleep).put("sleepRemaining", remaining);
+        return state.put("sleep", sleep).put("sleepRemaining", remaining).put("fm", settings.prefs.getBoolean("fm", false));
+    }
+
+    private boolean shouldTick() {
+        return started && ready && player != null && !isDestroyed()
+                && (player.isPlaying() || player.getPlaybackState() == Player.STATE_BUFFERING || settings.prefs.getInt("sleep", 0) > 0);
+    }
+
+    private void scheduleTick() {
+        main.removeCallbacks(tick);
+        if (shouldTick()) main.postDelayed(tick, PROGRESS_INTERVAL_MS);
     }
 
     /** Sends the playback structure; the queue is included only when it may have changed. */
@@ -385,12 +399,11 @@ public final class MainActivity extends ComponentActivity {
         } catch (Exception ignored) {
             // The next event or tick sends a fresh state.
         }
+        scheduleTick();
     }
 
     private void emitProgress() {
-        if (!ready || player == null || isDestroyed()) return;
-        boolean sleeping = settings.prefs.getInt("sleep", 0) > 0;
-        if (!player.isPlaying() && player.getPlaybackState() != Player.STATE_BUFFERING && !sleeping) return;
+        if (!shouldTick()) return;
         try {
             web.evaluateJavascript("window.onProgress?.(" + withSleep(Tracks.progress(player)) + ")", null);
         } catch (Exception ignored) {
@@ -404,6 +417,7 @@ public final class MainActivity extends ComponentActivity {
 
     private final Runnable tick = new Runnable() {
         @Override public void run() {
+            if (!shouldTick()) return;
             emitProgress();
             main.postDelayed(this, PROGRESS_INTERVAL_MS);
         }
@@ -411,29 +425,28 @@ public final class MainActivity extends ComponentActivity {
 
     @Override public void onStart() {
         super.onStart();
+        started = true;
         emit(false);
-        main.post(tick);
-    }
-
-    @Override public void onResume() {
-        super.onResume();
-        if (loginLaunched) {
-            loginLaunched = false;
-            main.postDelayed(this::syncLogin, 250);
-        }
     }
 
     private void syncLogin() {
         if (!ready) return;
-        try {
-            JSONObject state = settings.publicState();
-            if (state.optBoolean("loggedIn")) web.evaluateJavascript("window.onOfficialLogin?.(" + state + ")", null);
-        } catch (Exception ignored) {
-            // The user can retry the login from the account page.
-        }
+        io.execute(() -> {
+            try {
+                JSONObject state = settings.publicState();
+                if (state.optBoolean("loggedIn")) {
+                    main.post(() -> {
+                        if (!isDestroyed() && ready) web.evaluateJavascript("window.onOfficialLogin?.(" + state + ")", null);
+                    });
+                }
+            } catch (Exception ignored) {
+                // The user can retry the login from the account page.
+            }
+        });
     }
 
     @Override public void onStop() {
+        started = false;
         main.removeCallbacks(tick);
         if (!settings.background() && player != null && !isChangingConfigurations()) player.pause();
         super.onStop();

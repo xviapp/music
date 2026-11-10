@@ -147,8 +147,10 @@ public final class LoginActivity extends ComponentActivity {
             manager.flush();
             settings.setCookie(cookieString(cookies));
             completed = true;
-            setResult(RESULT_OK);
-            finish();
+            clearWebSession(cleared -> {
+                setResult(RESULT_OK);
+                finish();
+            });
         } catch (Exception error) {
             Toast.makeText(this, "登录信息保存失败，请重试", Toast.LENGTH_SHORT).show();
         }

@@ -26,7 +26,7 @@ export function mini() {
   const status = s.playback.error ? '播放失败，点播放重试' : s.playback.buffering ? '正在缓冲…' : song.artist;
   return html`
     <div class="mini">
-      ${art(song.cover)}
+      ${art(song.cover, 160)}
       <button class="songtitle" data-action="player"><b>${e(song.name)}</b><small>${e(status)}</small></button>
       ${button(s.playback.playing ? 'pause' : 'play', 'toggle', s.playback.playing ? '暂停' : '播放')}
       ${button('queue', 'queue', '播放队列')}
@@ -311,7 +311,7 @@ function commentRows(list) {
     const reply = c.beReplied?.[0];
     return html`
       <article class="comment-entry">
-        <div class="comment-avatar">${art(c.user?.avatarUrl)}</div>
+        <div class="comment-avatar">${art(c.user?.avatarUrl, 160)}</div>
         <div class="comment-body">
           <div class="comment-meta"><b>${e(c.user?.nickname || '网易云用户')}</b><small>${e(when)}</small></div>
           <p>${e(c.content || '')}</p>
@@ -327,7 +327,7 @@ export function commentsPage() {
   const has = s.comments.length || s.hotComments.length;
   const error = s.error ? (has ? retryInline(s.error, s.comments.length ? 'commentsmore' : 'commentsrefresh') : empty(s.error, 'commentsrefresh')) : '';
   return html`
-    ${song ? `<div class="comments-song">${art(song.cover)}<div><h2>${e(song.name)}</h2><small>${e(song.artist)}</small></div></div>` : ''}
+    ${song ? `<div class="comments-song">${art(song.cover, 160)}<div><h2>${e(song.name)}</h2><small>${e(song.artist)}</small></div></div>` : ''}
     ${s.hotComments.length ? `<div class="section"><h2>热门评论</h2></div>${commentRows(s.hotComments)}` : ''}
     <div class="section"><h2>最新评论${s.commentTotal ? ` · ${s.commentTotal}` : ''}</h2></div>
     ${s.comments.length ? commentRows(s.comments) : !s.busy && !s.error ? empty('还没有评论') : ''}
@@ -383,7 +383,7 @@ export function player() {
     <section class="overlay" aria-label="正在播放">
       <header class="header">${button('down', 'closeplayer', '收起播放器')}<small>正在播放</small>${button('queue', 'queue', '播放队列')}</header>
       <div class="content">
-        ${s.lyric ? lyricsView : `<div class="playercover">${art(song.cover)}</div>`}
+        ${s.lyric ? lyricsView : `<div class="playercover">${art(song.cover, 720)}</div>`}
         <div class="nowtitle">
           <div><h1>${e(song.name)}</h1><div class="artist-links">${artistLinks(song, 'current')}</div></div>
           ${button('heart', 'like', liked ? '取消喜欢' : '喜欢', liked ? 'liked' : '')}

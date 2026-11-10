@@ -36,8 +36,9 @@ public final class PlaybackService extends MediaSessionService {
     static final String LIKED = "music.liked";
 
     private static final long AUDIO_CACHE_BYTES = 512L * 1024 * 1024;
-    private static final long URL_TTL_MS = 60_000;
+    private static final long URL_TTL_MS = 10 * 60_000L;
     private static final long SAVE_INTERVAL_MS = 5_000;
+    private static final long QUEUE_SAVE_DELAY_MS = 300;
 
     private ExoPlayer player;
     private MediaSession session;
@@ -58,7 +59,9 @@ public final class PlaybackService extends MediaSessionService {
     private final Map<String, String> qualities = new ConcurrentHashMap<>();
     private final SharedPreferences.OnSharedPreferenceChangeListener qualityChange = (prefs, key) -> {
         if ("quality".equals(key)) qualities.clear();
+        else if ("fm".equals(key)) handler.post(this::refreshButtons);
     };
+    private final Runnable persistQueue = this::saveQueue;
     private final Runnable sleep = () -> {
         sleepTimer.clear();
         player.pause();
@@ -66,6 +69,7 @@ public final class PlaybackService extends MediaSessionService {
     };
     private final Runnable tick = new Runnable() {
         @Override public void run() {
+            if (player == null || !player.isPlaying()) return;
             savePlayback();
             handler.postDelayed(this, SAVE_INTERVAL_MS);
         }
@@ -83,13 +87,20 @@ public final class PlaybackService extends MediaSessionService {
         player.addListener(new Player.Listener() {
             @Override public void onEvents(Player p, Player.Events events) {
                 if (events.contains(Player.EVENT_TIMELINE_CHANGED)) {
-                    saveQueue();
+                    handler.removeCallbacks(persistQueue);
+                    handler.postDelayed(persistQueue, QUEUE_SAVE_DELAY_MS);
                     refreshButtons();
                 }
                 savePlayback();
             }
             @Override public void onIsPlayingChanged(boolean playing) {
-                if (playing) skipGuard.reset();
+                handler.removeCallbacks(tick);
+                if (playing) {
+                    skipGuard.reset();
+                    handler.postDelayed(tick, SAVE_INTERVAL_MS);
+                } else {
+                    savePlayback();
+                }
             }
             @Override public void onPlayerError(PlaybackException error) {
                 urls.clear();
@@ -117,7 +128,6 @@ public final class PlaybackService extends MediaSessionService {
                 .setCallback(new Callback())
                 .setMediaButtonPreferences(buttons())
                 .build();
-        handler.post(tick);
         loadLikes();
     }
 
@@ -448,6 +458,7 @@ public final class PlaybackService extends MediaSessionService {
             return;
         }
         player.pause();
+        saveQueue();
         savePlayback();
         stopSelf();
     }
@@ -457,6 +468,7 @@ public final class PlaybackService extends MediaSessionService {
         io.shutdownNow();
         settings.prefs.unregisterOnSharedPreferenceChangeListener(qualityChange);
         if (player != null) {
+            saveQueue();
             savePlayback();
             player.release();
             player = null;
